@@ -11,9 +11,7 @@ const client = new Client({
 Object.defineProperty(client, "app", { get: () => client.api.applications(client.user.id) });
 
 // Colors.
-const SUCCESS_COLOR = "#50C878";
-const WARNING_COLOR = "#FFE791";
-const ERROR_COLOR = "C80815";
+const SUCCESS_COLOR = 0x50C878;
 
 // Error handling.
 client.on("error", console.error);
@@ -29,7 +27,14 @@ client.ws.on("INTERACTION_CREATE", async (interaction) => {
 		const data = {
 			type: 4,
 			data: {
-				content: "Select your roles:",
+				// content: "Select your roles:",
+				embeds: [
+					{
+						title: "Select your roles:",
+						type: "rich",
+						color: SUCCESS_COLOR
+					}
+				],
 				components: []
 			}
 		};
