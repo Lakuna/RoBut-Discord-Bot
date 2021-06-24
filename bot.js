@@ -20,27 +20,7 @@ client.on("error", console.error);
 client.on("shardError", console.error);
 
 // Startup.
-client.on("ready", async () => {
-	client.user.setActivity("Role Reactions");
-
-	/*
-	Print commands:
-	console.log(await client.app.commands.get());
-
-	Create command:
-	// https://discord.com/developers/docs/interactions/slash-commands#registering-a-command
-	await client.app.commands.post({
-		data: {
-			name: "command_name",
-			description: "command_description"
-		}
-	});
-
-	Delete command:
-	// https://discord.com/developers/docs/interactions/slash-commands#updating-and-deleting-a-command
-	await client.app.commands('command_id').delete();
-	*/
-});
+client.on("ready", async () => client.user.setActivity("Role Buttons"));
 
 // Handle slash commands.
 client.ws.on("INTERACTION_CREATE", async (interaction) => {
