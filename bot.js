@@ -11,7 +11,7 @@ const client = new Client({
 Object.defineProperty(client, "app", { get: () => client.api.applications(client.user.id) });
 
 // Colors.
-const SUCCESS_COLOR = 0x50C878;
+const INFO_COLOR = 0x5078C8;
 
 // Error handling.
 client.on("error", console.error);
@@ -27,12 +27,11 @@ client.ws.on("INTERACTION_CREATE", async (interaction) => {
 		const data = {
 			type: 4,
 			data: {
-				// content: "Select your roles:",
 				embeds: [
 					{
 						title: "Select your roles:",
 						type: "rich",
-						color: SUCCESS_COLOR
+						color: INFO_COLOR
 					}
 				],
 				components: []
@@ -58,11 +57,31 @@ client.ws.on("INTERACTION_CREATE", async (interaction) => {
 		}
 
 		// Send output message.
-		client.api.interactions(interaction.id, interaction.token).callback.post({ data });
+		return client.api.interactions(interaction.id, interaction.token).callback.post({ data });
 	} else if (interaction.data.component_type == 2) {
 		// Buttons.
 
-		client.api.interactions(interaction.id, interaction.token).callback.post({ data: { type: 6 } }); // No output message.
+		// Find the guild.
+		const guild = await client.guilds.fetch(interaction.guild_id);
+		if (!guild) { return console.error("Failed to fetch button's guild."); }
+
+		// Find the member.
+		const member = await guild.members.fetch(interaction.member.user.id);
+		if (!member) { return console.error("Failed to fetch interaction's member."); }
+
+		// Find the role.
+		const role = await guild.roles.fetch(interaction.data.custom_id);
+		if (!role) { return; } // Role has been deleted.
+
+		// Give it to or remove it from the member.
+		if (member.roles.cache.has(role.id)) {
+			try { await member.roles.remove(role); } catch { return; }
+		} else {
+			try { await member.roles.add(role); } catch { return; }
+		}
+
+		// No output message, but prevent an error from showing.
+		return client.api.interactions(interaction.id, interaction.token).callback.post({ data: { type: 6 } });
 	}
 });
 
