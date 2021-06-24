@@ -46,105 +46,38 @@ client.on("ready", async () => {
 client.ws.on("INTERACTION_CREATE", async (interaction) => {
 	if (interaction.data.name == "setup") {
 		// Build output message.
+		const data = {
+			type: 4,
+			data: {
+				content: "Select your roles:",
+				components: []
+			}
+		};
 		const roles = Object.values(interaction.data.resolved.roles);
+		for (let i = 0; i < roles.length; i++) {
+			const row = Math.floor(i / 5);
 
-		client.api.interactions(interaction.id, interaction.token).callback.post({
-			data: {
-				type: 4,
-				data: {
-					content: "Placeholder."
-				}
+			while (data.data.components.length <= row) {
+				data.data.components.push({
+					type: 1,
+					components: []
+				});
 			}
-		});
 
-		// console.log(interaction.data.resolved);
-
-		/*
-		interaction.data.resolved[x] {
-			roles: {
-				'role_id': {
-					tags: [Object],
-					position: #,
-					permissions: '#######',
-					name: 'role_name',
-					mentionable: boolean,
-					managed: boolean,
-					id: '#######',
-					hoist: boolean,
-					color: #
-				},
-				'role_id': { ... }
-			}
+			data.data.components[row].components.push({
+				type: 2,
+				style: 1,
+				label: roles[i].name,
+				custom_id: roles[i].id
+			});
 		}
-		*/
 
-		/*
-		return client.api.interactions(interaction.id, interaction.token).callback.post({
-			data: {
-				type: 4,
-				data: {
-					content: "Select your roles:",
-					components: [
-						{
-							"type": 1, // ActionRow
-							"components": [
-								{
-									"type": 2, // Button
-									"style": 1,
-									"label": "Placeholder",
-									"custom_id": "Placeholder ID"
-								}
-							]
-						},
-						{
-							"type": 1, // ActionRow
-							"components": [
-								{
-									"type": 2, // Button
-									"style": 1,
-									"label": "Placeholder 2",
-									"custom_id": "Placeholder ID 2"
-								}
-							]
-						}
-					]
-				}
-			}
-		});
-		*/
+		// Send output message.
+		client.api.interactions(interaction.id, interaction.token).callback.post({ data });
 	} else if (interaction.data.component_type == 2) {
-		// Buttons!
+		// Buttons.
 
-		client.api.interactions(interaction.id, interaction.token).callback.post({
-			data: {
-				type: 4,
-				data: {
-					content: "Button placeholder."
-				}
-			}
-		});
-
-		/*
-		interaction {
-			message: { ... },
-			member: {
-				user: {
-					username: 'username',
-					id: '#######',
-					...
-				},
-				...
-			},
-			id: '#######',
-			guild_id: '########',
-			data: {
-				custom_id: 'button_assigned_id',
-				component_type: #
-			},
-			channel_id: '########',
-			application_id: '#######'
-		}
-		*/
+		client.api.interactions(interaction.id, interaction.token).callback.post({ data: { type: 6 } }); // No output message.
 	}
 });
 
