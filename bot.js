@@ -1,4 +1,4 @@
-const { Client } = require("discord.js");
+const { Client, Permissions } = require("discord.js");
 
 // Create client.
 // Invite link: https://discord.com/api/oauth2/authorize?client_id=857398032056320030&permissions=268504128&scope=bot%20applications.commands
@@ -12,6 +12,7 @@ Object.defineProperty(client, "app", { get: () => client.api.applications(client
 
 // Colors.
 const INFO_COLOR = 0x5078C8;
+const WARNING_COLOR = 0xFFE791;
 
 // Error handling.
 client.on("error", console.error);
@@ -22,18 +23,43 @@ client.on("ready", async () => client.user.setActivity("Role Buttons"));
 
 // Handle slash commands.
 client.ws.on("INTERACTION_CREATE", async (interaction) => {
+	// Find the guild.
+	const guild = await client.guilds.fetch(interaction.guild_id);
+	if (!guild) { return console.error("Failed to fetch interaction's guild."); }
+
+	// Find the member.
+	const member = await guild.members.fetch(interaction.member.user.id);
+	if (!member) { return console.error("Failed to fetch interaction's member."); }
+
 	if (interaction.data.name == "setup") {
+		// Find the channel.
+		const channel = guild.channels.cache.find((channel) => channel.id == interaction.channel_id);
+		if (!channel) { return console.error("Failed to find interaction's channel."); }
+
+		// Restrict to administrators.
+		if (!member.permissionsIn(channel).has("ADMINISTRATOR")) {
+			return client.api.interactions(interaction.id, interaction.token).callback.post({
+				data: {
+					type: 4,
+					data: { embeds: [{
+						title: "Insufficient permissions.",
+						type: "rich",
+						description: "Only administrators may setup role buttons.",
+						color: WARNING_COLOR
+					}] }
+				}
+			});
+		}
+
 		// Build output message.
 		const data = {
 			type: 4,
 			data: {
-				embeds: [
-					{
-						title: "Select your roles:",
-						type: "rich",
-						color: INFO_COLOR
-					}
-				],
+				embeds: [{
+					title: "Select your roles:",
+					type: "rich",
+					color: INFO_COLOR
+				}],
 				components: []
 			}
 		};
@@ -60,14 +86,6 @@ client.ws.on("INTERACTION_CREATE", async (interaction) => {
 		return client.api.interactions(interaction.id, interaction.token).callback.post({ data });
 	} else if (interaction.data.component_type == 2) {
 		// Buttons.
-
-		// Find the guild.
-		const guild = await client.guilds.fetch(interaction.guild_id);
-		if (!guild) { return console.error("Failed to fetch button's guild."); }
-
-		// Find the member.
-		const member = await guild.members.fetch(interaction.member.user.id);
-		if (!member) { return console.error("Failed to fetch interaction's member."); }
 
 		// Find the role.
 		const role = await guild.roles.fetch(interaction.data.custom_id);
