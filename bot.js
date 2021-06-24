@@ -74,7 +74,7 @@ client.ws.on("INTERACTION_CREATE", async (interaction) => {
 		if (!role) { return; } // Role has been deleted.
 
 		// Give it to or remove it from the member.
-		if (member.roles.cache.has(role.id)) {
+		if (interaction.member.roles.includes(role.id)) {
 			try { await member.roles.remove(role); } catch { return; }
 		} else {
 			try { await member.roles.add(role); } catch { return; }
